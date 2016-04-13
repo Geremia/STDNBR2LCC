@@ -7,7 +7,7 @@ output=${2:?Second argument missing: Name of file containing found LCNs required
 
 rm -f .tmp?.txt
 
-echo "Finding LCNs in LOC.gov..."
+echo -e "Finding LCNs in LOC.gov...\n"
 for i in ${input}
 do
     xml=`curl -s "http://lx2.loc.gov:210/lcdb?operation=searchRetrieve&query=bath.isbn=$i&maximumRecords=1&recordSchema=mods"` #https://stackoverflow.com/a/27877972/1429450
@@ -20,7 +20,7 @@ do
     fi    
 done
 
-echo -e "\nFinding LCNs in OCLC Classify..."
+echo -e "\nFinding LCNs in OCLC Classify...\n"
 for i in ${input}
 do
     xml=`curl -s "http://classify.oclc.org/classify2/Classify?isbn=$i&summary=true"`
@@ -38,10 +38,11 @@ do
 done
 
 echo -e "\nMerging duplicate ISBNs (preferring LCNs from LOC.gov)..."
-sort -nbut '|' -k2,2 .tmp1.txt .tmp2.txt | sort -but '|' -k1,1 | tee -a ${output}
+sort -nbut '|' -k2,2 .tmp1.txt .tmp2.txt | sort -but '|' -k1,1 >> "${output}" #select 1st occurrence (LOC result) of duplicate ISBNs only
+sort -but '|' "${output}" > "${output}" #sort by LCN
 echo -e "\nOutput written to ${output}."
 
-echo -e "\nCleaning up..."
-rm -vf .tmp1.txt .tmp2.txt
+#echo -e "\nCleaning up..."
+#rm -vf .tmp1.txt .tmp2.txt
 
 echo -e "\nDone."
