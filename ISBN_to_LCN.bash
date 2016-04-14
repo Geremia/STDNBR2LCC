@@ -1,13 +1,14 @@
 #!/usr/bin/bash
 
-#Search LOC.gov and OCLC Classify for Library of Congress Numbers (LCNs) associated with ISBNs of text file (arg. #1), merging results into one output file (arg. #2). If output file already exists, results are appended to it.
+#Search LOC.gov and OCLC Classify for Library of Congress Numbers (LCNs) associated with ISBNs of text file (arg. #1), outputting into one output file (arg. #2).
+# If LCN is not found, Dewey tried; if neither found, output will not contain a record for the particular ISBN.
 
 input=`cat ${1:?First argument missing: File containing list of ISBNs required.} | sort -nu | sed '/^$/d'`
 output=${2:?Second argument missing: Name of file containing found LCNs required.}
 
 rm -f .tmp?.txt
 
-echo -e "Finding LCNs in LOC.gov...\n"
+echo -e "\nFinding LCNs in LOC.gov...\n"
 for i in ${input}
 do
     xml=`curl -s "http://lx2.loc.gov:210/lcdb?operation=searchRetrieve&query=bath.isbn=$i&maximumRecords=1&recordSchema=mods"` #https://stackoverflow.com/a/27877972/1429450
@@ -38,11 +39,10 @@ do
 done
 
 echo -e "\nMerging duplicate ISBNs (preferring LCNs from LOC.gov)..."
-sort -nbut '|' -k2,2 .tmp1.txt .tmp2.txt | sort -but '|' -k1,1 >> "${output}" #select 1st occurrence (LOC result) of duplicate ISBNs only
-sort -but '|' "${output}" > "${output}" #sort by LCN
+sort -bunt '|' -k2,2 .tmp1.txt .tmp2.txt | sort -bt '.' -k1,1 | tee "${output}" #select 1st occurrence (LOC result) of duplicate ISBNs only
 echo -e "\nOutput written to ${output}."
 
-#echo -e "\nCleaning up..."
-#rm -vf .tmp1.txt .tmp2.txt
+echo -e "\nCleaning up..."
+rm -vf .tmp1.txt .tmp2.txt
 
 echo -e "\nDone."
