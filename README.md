@@ -1,0 +1,1 @@
+LCC sorting courtesy [library-callnumber-lc](https://github.com/libraryhackers/library-callnumber-lc/blob/master/perl/Library-CallNumber-LC/lib/Library/CallNumber/LC.pm)
